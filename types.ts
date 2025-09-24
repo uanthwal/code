@@ -25,6 +25,10 @@ export interface SectionConfig {
   type: 'homogenous' | 'heterogenous';
   rank: number;
   isCustomizable: boolean;
+  x?: number;
+  y?: number;
+  w?: number;
+  h?: number;
   cellHeightPx?: number;
   cellWidthPx?: number;
   widgets: WidgetConfig[];
@@ -41,12 +45,6 @@ export interface EditControlsProps {
   onToggleEdit: () => void;
   onSave: () => void;
   canSave: boolean;
-}
-
-export interface GridstackWrapperProps {
-  layout: PageConfig;
-  isEditMode: boolean;
-  onSaveLayout: (widgetsData: WidgetData[]) => void;
 }
 
 export interface WidgetData {

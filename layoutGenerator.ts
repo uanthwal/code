@@ -21,12 +21,14 @@ export class LayoutGenerator {
           widget.maxW = widget.defaultSize.maxW;
           widget.maxH = widget.defaultSize.maxH;
           widget.x = currentX;
-          widget.y = currentY;
+          widget.y = 0; // Relative to section grid
           currentX += widget.w ?? 1;
         });
-        currentY += section.widgets[0]?.h ?? 1;
+        section.w = currentX; // Width of section block in parent page grid
+        section.h = section.widgets[0]?.h ?? 1;
       } else {
-        section.widgets.forEach((widget, idx) => {
+        let sectionHeight = 0;
+        section.widgets.forEach(widget => {
           widget.w = widget.defaultSize.w;
           widget.h = widget.defaultSize.h;
           widget.minW = widget.defaultSize.minW;
@@ -34,10 +36,16 @@ export class LayoutGenerator {
           widget.maxW = widget.defaultSize.maxW;
           widget.maxH = widget.defaultSize.maxH;
           widget.x = 0;
-          widget.y = currentY + idx * (widget.h ?? 10);
+          widget.y = sectionHeight;
+          sectionHeight += widget.h ?? 1;
         });
-        currentY += section.widgets.reduce((acc, w) => acc + (w.h ?? 10), 0);
+        section.w = section.widgets[0]?.w ?? 1;
+        section.h = sectionHeight;
       }
+
+      section.x = 0; // Position in page main grid
+      section.y = currentY;
+      currentY += section.h ?? 1;
     });
 
     return cloned;

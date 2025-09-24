@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import GridstackWrapper from './GridstackWrapper';
-import EditControls from './EditControls';
 import { PageConfig, WidgetData } from './types';
 import { PageHandler } from './pageHandler';
+import PageGrid from './PageGrid';
+import EditControls from './EditControls';
 
 interface GpfWidgetProps {
   name: string;
@@ -18,25 +18,28 @@ const GpfWidget: React.FC<GpfWidgetProps> = ({ name, userId }) => {
 
   useEffect(() => {
     setLoading(true);
-    pageHandler.current.loadPage()
+    pageHandler.current
+      .loadPage()
       .then(page => setLayout(page))
       .finally(() => setLoading(false))
       .catch(console.error);
   }, [name]);
 
-  const toggleEditMode = () => setIsEditMode(prev => !prev);
+  const toggleEditMode = (): void => setIsEditMode(prev => !prev);
 
-  const handleSave = async (widgetsData: WidgetData[]) => {
+  const handleSave = async (widgetsData: WidgetData[], sectionId?: string): Promise<void> => {
     if (!layout) return;
+
     try {
       await pageHandler.current.saveUserOverrides({
         pageId: layout.pageId,
-        sections: layout.sections.map(section => ({
-          sectionId: section.sectionId,
-          widgets: widgetsData.filter(w =>
-            section.widgets.some(sw => sw.widgetInstanceId === w.widgetInstanceId)
-          )
-        }))
+        sections: layout.sections.map(section => {
+          if (sectionId && section.sectionId !== sectionId) return section;
+          return {
+            sectionId: section.sectionId,
+            widgets: widgetsData.filter(w => section.widgets.some(sw => sw.widgetInstanceId === w.widgetInstanceId)),
+          };
+        }),
       });
       alert('Layout saved!');
       setIsEditMode(false);
@@ -48,8 +51,10 @@ const GpfWidget: React.FC<GpfWidgetProps> = ({ name, userId }) => {
   return (
     <div>
       {loading && <div>Loading...</div>}
-      <EditControls isEditMode={isEditMode} onToggleEdit={toggleEditMode} canSave={isEditMode} />
-      {layout && <GridstackWrapper layout={layout} isEditMode={isEditMode} onSaveLayout={handleSave} />}
+      <EditControls isEditMode={isEditMode} onToggleEdit={toggleEditMode} canSave={isEditMode} onSave={() => {}} />
+      {layout && (
+        <PageGrid layout={layout} isEditMode={isEditMode} onSaveLayout={handleSave} />
+      )}
     </div>
   );
 };
